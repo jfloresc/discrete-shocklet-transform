@@ -410,3 +410,201 @@ def top_k(indices, words, k):
     top = [(word, val) for word, val in zip(topkwords, topkvals)]
     top = sorted(top, key=lambda t: t[1], reverse=True)
     return top
+
+
+def _sliding_windows(a, N):
+    """Generates band numpy array *quickly*
+    Taken from https://stackoverflow.com/questions/52463972/generating-banded-matrices-using-numpy.
+    """
+    a = np.asarray(a)
+    p = np.zeros(N-1,dtype=a.dtype)
+    b = np.concatenate((p,a,p))
+    s = b.strides[0]
+    return np.lib.stride_tricks.as_strided(b[N-1:], 
+                   shape=(N,len(a)+N-1),
+                   strides=(-s,s))
+
+
+def setup_corr_mat(k, N):
+    """Sets up linear operator corresponding to cross correlation.
+
+    The cross-correlation operation can be just viewed as a linear operation from R^K to R^K as 
+    Ax = C. The operator A is a banded matrix that represents the rolling add operation that 
+    defines cross-correlation. To execute correlation of the kernel with data
+    one computes np.dot(A, data).
+
+    :param k: the cross-correlation kernel
+    :type k: numpy.ndarray
+    :param N: shape of data array with which k will be cross-correlated.
+    :type N: positive int
+    :returns: numpy.ndarray -- NxN array, the cross-correlation operator
+    """
+    full_corr_mat = _sliding_windows(k, N)
+    overhang = full_corr_mat.shape[-1] - N
+    if overhang %2 == 1:
+        front = int((overhang + 1) / 2) - 1
+        back = front + 1
+    else:
+        front = back = int(overhang / 2)
+    corr_mat = full_corr_mat[:, front:-back]
+
+    return corr_mat
+    
+
+def matrix_cusplet(arr,
+           kernel,
+           widths,
+           k_args=[],
+           reflection=0,
+           width_weights=None):
+           """Computes the cusplet transform using matrix multiplication.
+
+           This method is provided for the sake only of completeness; it is orders of magnitude 
+           slower than ``cusplets.cusplet`` and there is no good reason to use it in production.
+           You should use ``cusplets.cusplet`` instead.
+
+           :param arr: array of shape (n,) or (n,1). This array should not contain inf-like values.
+            
+           The transform will still be computed but infs propagate. Nan-like values will be linearly 
+           interpolated, which is okay for subsequent time-based analysis but will introduce ringing 
+           in frequency-based analyses.
+           :type arr: list, tuple, or numpy.ndarray
+
+           :param kernel: kernel function. Must take an integer L > 0 as an 
+           argument and any number of additional, nonkeyword arguments, 
+           and returns a numpy array of shape (L,) that implements the kernel. 
+           The returned array should sum to zero; use the zero_norm function for this.
+           :type kernel: callable
+
+           :param widths: iterable of integers that specify the window widths (L above).
+           Assumed to be in increasing order; if widths is not in increasing order the 
+           results will be garbage.
+           :type widths: iterable
+
+           :param k_args: arguments for the kernel function.
+           :type k_args: list or tuple
+
+           :param reflection: integer n evaluates to n %4, element of the reflection group
+           that left-multiplies the kernel function. Default is 0 (identity element).
+           :type reflection: int
+
+           :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform,
+           None)
+
+           """
+    arr = np.array( arr )
+    cc = np.zeros((len(widths), len(arr)))
+
+    # we need to fill all nans
+    # best choice for this is linear interpolation
+
+    nans = np.isnan(arr)
+    nonzero_fn = lambda x: x.nonzero()[0]
+
+    arr[nans] = np.interp(nonzero_fn(nans),
+            nonzero_fn(~nans),
+            arr[~nans])
+
+    # allow for weighting of width importance
+    if width_weights is None:
+        width_weights = np.ones_like(widths)
+   
+    # now we will see what group action to operate with
+    for i, w in enumerate(widths):
+        k = kernel(w, *k_args)
+        # implement reflections
+        reflection = reflection % 4
+        if reflection == 1:
+            k = k[::-1]
+        elif reflection == 2:
+            k = -k
+        elif reflection == 3:
+            k = -k[::-1]
+            
+        # now set up the cross correlation
+        corr_mat = setup_corr_mat(k, arr.shape[0])
+        cc[i] = np.dot(corr_mat, arr)
+        
+    return cc, None
+
+
+def inverse_cusplet(cc,
+                   kernel,
+                   widths,
+                   k_args=[],
+                   reflection=0,
+                   width_ind=0
+                   ):
+    """Computes the inverse of the discrete cusplet / shocklet transform.
+
+    The cusplet transform is overcomplete, at least in theory. Since each row of the cusplet transform is 
+    a cross-correlation between the kernel function and the time series, it is---again, in theory---possible to recover 
+    the original time series of data from any row of the cusplet transform and the appropriate kernel. 
+    A row of the cusplet transform, denoted by c, is defined by c = Ax, where A is the cross-correlation matrix 
+    constructed from kernel k. 
+    If A is invertible then we trivially have x = A^{-1}c.
+    In theory, the full inverse transform using the full cusplet transform C is given by 
+    x = \langle A_w^{-1}c_w\\rangle_{w}, where by w we denote the appropriate kernel width parameter.
+
+    We note that there is really no reason to ever use this function. Unlike other transforms, 
+    it is *highly* unlikely that a user will be confronted with some arbitrary cusplet transform and need to 
+    recover the raw data from it. 
+    In other words, one often is confronted with frequency data corresponding to a Fourier transform and needs to 
+    extract the original time series from it, but the cusplet transform is intended to be a data analysis tool and 
+    so the data should always be accessible to the user.
+
+    In the practical implementation here,
+    the user can specify which row of the cusplet transform to use. By default we will use the first row of the 
+    transform since this will introduce the fewest numerical errors in the inversion.
+    This is true because the convolution operations involves fewer elements in each sum;
+    the convolution matrix will have lower bandwidth and hence will be easier to invert.
+
+    :param cc: the cusplet transform array, shape W x T
+    :type cc: numpy.ndarray
+   
+    :param kernel: kernel function. Must take an integer L > 0 as an 
+    argument and any number of additional, nonkeyword arguments, 
+    and returns a numpy array of shape (L,) that implements the kernel. 
+    The returned array should sum to zero; use the zero_norm function for this.
+    :type kernel: callable
+
+    :param widths: iterable of integers that specify the window widths (L above).
+    Assumed to be in increasing order; if widths is not in increasing order the 
+    results will be garbage.
+    :type widths: iterable
+
+    :param k_args: arguments for the kernel function.
+    :type k_args: list or tuple
+
+    :param reflection: integer n evaluates to n %4, element of the reflection group
+    that left-multiplies the kernel function. Default is 0 (identity element).
+    :type reflection: int
+
+    :returns: numpy.ndarray -- the reconstructed original time series. This time series will have (roughly) 
+    the same functional form as the original, 
+    but it is not guaranteed that its location and scale will be the same.
+    """
+    # now we will see what group action to operate with
+    # cusplet transform is overcomplete so we need only invert one row
+    # by default choose the one with smallest kernel as will have 
+    # smallest numerical error
+    w = widths[width_ind]
+    k = kernel(w, *k_args)
+    # implement reflections
+    reflection = reflection % 4
+    if reflection == 1:
+        k = k[::-1]
+    elif reflection == 2:
+        k = -k
+    elif reflection == 3:
+        k = -k[::-1]
+    corr_mat = setup_corr_mat(k, cc.shape[1])
+    # cusplet transform can be written Ax = C
+    # so we need x = A^{-1}C
+    # but this is gross and expensive so solve using lstsq
+    invq = np.linalg.lstsq(
+                          corr_mat,
+                          cc[width_ind],
+                          rcond=-1
+    )
+    return invq
