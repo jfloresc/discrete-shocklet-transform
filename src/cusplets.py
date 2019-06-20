@@ -452,46 +452,46 @@ def setup_corr_mat(k, N):
     
 
 def matrix_cusplet(arr,
-           kernel,
-           widths,
-           k_args=[],
-           reflection=0,
-           width_weights=None):
-           """Computes the cusplet transform using matrix multiplication.
+    kernel,
+    widths,
+    k_args=[],
+    reflection=0,
+    width_weights=None):
+    """Computes the cusplet transform using matrix multiplication.
 
-           This method is provided for the sake only of completeness; it is orders of magnitude 
-           slower than ``cusplets.cusplet`` and there is no good reason to use it in production.
-           You should use ``cusplets.cusplet`` instead.
+    This method is provided for the sake only of completeness; it is orders of magnitude 
+    slower than ``cusplets.cusplet`` and there is no good reason to use it in production.
+    You should use ``cusplets.cusplet`` instead.
 
-           :param arr: array of shape (n,) or (n,1). This array should not contain inf-like values.
-            
-           The transform will still be computed but infs propagate. Nan-like values will be linearly 
-           interpolated, which is okay for subsequent time-based analysis but will introduce ringing 
-           in frequency-based analyses.
-           :type arr: list, tuple, or numpy.ndarray
+    :param arr: array of shape (n,) or (n,1). This array should not contain inf-like values.
 
-           :param kernel: kernel function. Must take an integer L > 0 as an 
-           argument and any number of additional, nonkeyword arguments, 
-           and returns a numpy array of shape (L,) that implements the kernel. 
-           The returned array should sum to zero; use the zero_norm function for this.
-           :type kernel: callable
+    The transform will still be computed but infs propagate. Nan-like values will be linearly 
+    interpolated, which is okay for subsequent time-based analysis but will introduce ringing 
+    in frequency-based analyses.
+    :type arr: list, tuple, or numpy.ndarray
 
-           :param widths: iterable of integers that specify the window widths (L above).
-           Assumed to be in increasing order; if widths is not in increasing order the 
-           results will be garbage.
-           :type widths: iterable
+    :param kernel: kernel function. Must take an integer L > 0 as an 
+    argument and any number of additional, nonkeyword arguments, 
+    and returns a numpy array of shape (L,) that implements the kernel. 
+    The returned array should sum to zero; use the zero_norm function for this.
+    :type kernel: callable
 
-           :param k_args: arguments for the kernel function.
-           :type k_args: list or tuple
+    :param widths: iterable of integers that specify the window widths (L above).
+    Assumed to be in increasing order; if widths is not in increasing order the 
+    results will be garbage.
+    :type widths: iterable
 
-           :param reflection: integer n evaluates to n %4, element of the reflection group
-           that left-multiplies the kernel function. Default is 0 (identity element).
-           :type reflection: int
+    :param k_args: arguments for the kernel function.
+    :type k_args: list or tuple
 
-           :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform,
-           None)
+    :param reflection: integer n evaluates to n %4, element of the reflection group
+    that left-multiplies the kernel function. Default is 0 (identity element).
+    :type reflection: int
 
-           """
+    :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform,
+    None)
+
+    """
     arr = np.array( arr )
     cc = np.zeros((len(widths), len(arr)))
 
