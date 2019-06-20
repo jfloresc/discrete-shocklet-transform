@@ -105,7 +105,7 @@ def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None):
     that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
-    :return tuple -- (numpy array of shape (L, n) -- the cusplet transform,
+    :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform,
     k -- the calculated kernel function)
     """
     arr = np.array( arr )
@@ -167,7 +167,7 @@ def cusplet_parameter_sweep(arr, kernel, widths, k_args, reflection=0, width_wei
     that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
-    :return numpy.ndarray -- numpy array of shape (L, n, len(k_args)), the cusplet transform
+    :returns: numpy.ndarray -- numpy array of shape (L, n, len(k_args)), the cusplet transform
     """
     k_args = np.array(k_args)
 
@@ -203,7 +203,7 @@ def classify_cusps(cc, b=1, geval=False):
     (in additoin to the cusps and cusp intensity function) an array of points where the cusp intensity 
     function is greater than geval.
 
-    :return tuple --- (numpy.ndarray of indices of the cusps;
+    :returns: tuple --- (numpy.ndarray of indices of the cusps;
     numpy.ndarray representing the cusp intensity function) 
     or, if geval is not False, (extrema; the cusp intensity function; array of points where 
     the cusp intensity function is greater than geval)
@@ -237,7 +237,7 @@ def _make_components(indicator, cusp_points=None):
     cusps
     :type cusp_points: list or numpy.ndarray
 
-    :return list -- the contiguous cusp windows; or, if cusp_points is not None, tuple --
+    :returns: list -- the contiguous cusp windows; or, if cusp_points is not None, tuple --
     (the contiguous cusp windows, the thinned cusp points)
     """
     windows = []
@@ -305,7 +305,7 @@ def make_components(indicator, cusp_points=None, scan_back=0):
     of each other, they will be connected into one contiguous window.
     :type scan_back: int >= 0
 
-    :return list -- the contiguous cusp windows; or, if cusp_points is not None, tuple --
+    :returns: list -- the contiguous cusp windows; or, if cusp_points is not None, tuple --
     (the contiguous cusp windows, the thinned cusp points)
     """
     windows = _make_components(indicator, cusp_points=cusp_points)
@@ -345,7 +345,7 @@ def window_argmaxes(windows, data):
     :param data: a list of data points
     :type data: a list or numpy.ndarray
 
-    :return numpy.array -- max points for each window.
+    :returns: numpy.array -- max points for each window.
     """
     data = np.array(data)
     argmaxes = []
@@ -364,7 +364,7 @@ def max_change(arr):
     :param arr: a time series for a given word
     :type arr: a list or numpy.ndarray
 
-    :return float -- maximum relative change
+    :returns: float -- maximum relative change
     """
     return np.max(arr) - np.min(arr)
 
@@ -380,7 +380,7 @@ def max_rel_change(arr, neg=True):
 
     :param neg: (if true) arr - np.min(arr) + 1
 
-    :return  float -- maximum relative change (log10)
+    :returns:  float -- maximum relative change (log10)
     """
     if neg:
         arr = arr - np.min(arr) + 1
@@ -402,7 +402,7 @@ def top_k(indices, words, k):
     :param k: number of indices to look up.
     :type k: int > 0
 
-    :return list -- length k list of (word, indicator value) tuples
+    :returns: list -- length k list of (word, indicator value) tuples
     """
     inds = np.argpartition(indices, -k)[-k:]
     topkwords = words[inds]
