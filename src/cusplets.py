@@ -5,17 +5,25 @@ from scipy import signal
 
 
 def zero_norm(arr):
+    """Normalizes an array so that it sums to zero
+
+    :param arr: the array
+    :type arr: iterable
+    :returns: numpy.ndarray -- the zero-normalized array
+    """
     arr = 2 * (arr - min(arr)) / (max(arr) - min(arr)) - 1
     return arr - np.sum(arr) / len(arr)
 
 
-def make_prob(arr):
-    arr = arr - min(arr)
-    arr = arr / np.sum(arr)
-    return arr
-
-
 def normalize(arr, stats=False):
+    """Normalizes an array to have zero mean and unit variance
+
+    :param arr: the array
+    :type arr: iterable
+    :param stats: if stats is True, will also return mean and std of array
+    :type stats: bool
+    :returns: numpy.ndarray -- normalized array; or, if stats is True, tuple -- (normalized array, mean, std)
+    """
     arr = np.array(arr)
     mean = arr.mean()
     std = arr.std()
@@ -81,32 +89,22 @@ def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None):
     """
     Implements the discrete cusplet transform.
 
-    :param arr: array of shape (n,) or (n,1). This array should not contain inf-like values.
-    The transform will still be computed but infs propagate. Nan-like values will be linearly 
-    interpolated, which is okay for subsequent time-based analysis but will introduce ringing 
-    in frequency-based analyses.
+    :param arr: array of shape (n,) or (n,1). This array should not contain inf-like values. The transform will still be computed but infs propagate. Nan-like values will be linearly interpolated, which is okay for subsequent time-based analysis but will introduce ringing in frequency-based analyses.
     :type arr: list, tuple, or numpy.ndarray
 
-    :param kernel: kernel function. Must take an integer L > 0 as an 
-    argument and any number of additional, nonkeyword arguments, 
-    and returns a numpy array of shape (L,) that implements the kernel. 
-    The returned array should sum to zero; use the zero_norm function for this.
+    :param kernel: kernel function. Must take an integer L > 0 as an argument and any number of additional, nonkeyword arguments, and returns a numpy array of shape (L,) that implements the kernel. The returned array should sum to zero; use the zero_norm function for this.
     :type kernel: callable
 
-    :param widths: iterable of integers that specify the window widths (L above).
-    Assumed to be in increasing order; if widths is not in increasing order the 
-    results will be garbage.
+    :param widths: iterable of integers that specify the window widths (L above). Assumed to be in increasing order; if widths is not in increasing order the results will be garbage.
     :type widths: iterable
 
     :param k_args: arguments for the kernel function.
     :type k_args: list or tuple
 
-    :param reflection: integer n evaluates to n %4, element of the reflection group
-    that left-multiplies the kernel function. Default is 0 (identity element).
+    :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
-    :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform,
-    k -- the calculated kernel function)
+    :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform, k -- the calculated kernel function)
     """
     arr = np.array( arr )
     cc = np.zeros((len(widths), len(arr)))
@@ -148,23 +146,16 @@ def cusplet_parameter_sweep(arr, kernel, widths, k_args, reflection=0, width_wei
     :param arr: numpy array of shape (n,) or (n,1), time series
     :type arr: list, tuple, or numpy.ndarray
 
-    :param kernel: kernel function. Must take an integer L > 0 as an 
-    argument and any number of additional, nonkeyword arguments, 
-    and returns a numpy array of shape (L,) that implements the kernel. 
-    The returned array should sum to zero; use the zero_norm function for this.
+    :param kernel: kernel function. Must take an integer L > 0 as an argument and any number of additional, nonkeyword arguments, and returns a numpy array of shape (L,) that implements the kernel. The returned array should sum to zero; use the zero_norm function for this.
     :type kernel: callable
 
-    :param widths: iterable of integers that specify the window widths (L above).
-    Assumed to be in increasing order; if widths is not in increasing order the 
-    results will be garbage.
+    :param widths: iterable of integers that specify the window widths (L above). Assumed to be in increasing order; if widths is not in increasing order the results will be garbage.
     :type widths: iterable
 
-    :param k_args: iterable of iterables of arguments for the kernel function.
-    Each top-level iterable is treated as a single parameter vector.
+    :param k_args: iterable of iterables of arguments for the kernel function. Each top-level iterable is treated as a single parameter vector.
     :type k_args: list or tuple of lists or tuples
 
-    :param reflection: integer n evaluates to n %4, element of the reflection group
-    that left-multiplies the kernel function. Default is 0 (identity element).
+    :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
     :returns: numpy.ndarray -- numpy array of shape (L, n, len(k_args)), the cusplet transform
@@ -192,21 +183,16 @@ def classify_cusps(cc, b=1, geval=False):
     """
     Classifies points as belonging to cusps or not.
 
-    :param cc: numpy array of shape (L, n), the cusplet transform of 
-    a time series
+    :param cc: numpy array of shape (L, n), the cusplet transform of a time series
     :type cc: numpy.ndarray
 
     :param b: multiplier of the standard deviation.
     :type b: int or float
 
-    :param geval: optional. If geval is an int or float, classify_cusps will return
-    (in additoin to the cusps and cusp intensity function) an array of points where the cusp intensity 
-    function is greater than geval.
+    :param geval: optional. If geval is an int or float, classify_cusps will return (in addition to the cusps and cusp intensity function) an array of points where the cusp intensity function is greater than geval.
+    :type geval: float >= 0
 
-    :returns: tuple --- (numpy.ndarray of indices of the cusps;
-    numpy.ndarray representing the cusp intensity function) 
-    or, if geval is not False, (extrema; the cusp intensity function; array of points where 
-    the cusp intensity function is greater than geval)
+    :returns: tuple --- (numpy.ndarray of indices of the cusps; numpy.ndarray representing the cusp intensity function) or, if geval is not False, (extrema; the cusp intensity function; array of points where the cusp intensity function is greater than geval)
     """
     sum_cc = zero_norm(np.nansum(cc, axis=0))
     mu_cc = np.nanmean(sum_cc)
@@ -233,12 +219,10 @@ def _make_components(indicator, cusp_points=None):
     :param indicator: array of the points where the cusp intensity function exceeds some threshold
     :type indicator: list
 
-    :param cusp_points: optional, array of points that denote the hypothesized deterministic peaks of 
-    cusps
+    :param cusp_points: optional, array of points that denote the hypothesized deterministic peaks of cusps
     :type cusp_points: list or numpy.ndarray
 
-    :returns: list -- the contiguous cusp windows; or, if cusp_points is not None, tuple --
-    (the contiguous cusp windows, the thinned cusp points)
+    :returns: list -- the contiguous cusp windows; or, if cusp_points is not None, tuple -- (the contiguous cusp windows, the thinned cusp points)
     """
     windows = []
     indicator = np.array(indicator)
@@ -297,16 +281,13 @@ def make_components(indicator, cusp_points=None, scan_back=0):
     :param indicator: array of the points where the cusp intensity function exceeds some threshold
     :type indicator: list
 
-    :param cusp_points: optional, array of points that denote the hypothesized deterministic peaks of 
-    cusps
+    :param cusp_points: optional, array of points that denote the hypothesized deterministic peaks of cusps
     :type cusp_points: list or numpy.ndarray
 
-    :param scan_back: number of indices to look back. If cusp windows are within scan_back indices
-    of each other, they will be connected into one contiguous window.
+    :param scan_back: number of indices to look back. If cusp windows are within scan_back indices of each other, they will be connected into one contiguous window.
     :type scan_back: int >= 0
 
-    :returns: list -- the contiguous cusp windows; or, if cusp_points is not None, tuple --
-    (the contiguous cusp windows, the thinned cusp points)
+    :returns: list -- the contiguous cusp windows; or, if cusp_points is not None, tuple -- (the contiguous cusp windows, the thinned cusp points)
     """
     windows = _make_components(indicator, cusp_points=cusp_points)
 
@@ -361,7 +342,7 @@ def max_change(arr):
     """
     Calculates the difference between the max and min points in an array.
 
-    :param arr: a time series for a given word
+    :param arr: a time series
     :type arr: a list or numpy.ndarray
 
     :returns: float -- maximum relative change
@@ -463,33 +444,22 @@ def matrix_cusplet(arr,
     slower than ``cusplets.cusplet`` and there is no good reason to use it in production.
     You should use ``cusplets.cusplet`` instead.
 
-    :param arr: array of shape (n,) or (n,1). This array should not contain inf-like values.
-
-    The transform will still be computed but infs propagate. Nan-like values will be linearly 
-    interpolated, which is okay for subsequent time-based analysis but will introduce ringing 
-    in frequency-based analyses.
+    :param arr: array of shape (n,) or (n,1). This array should not contain inf-like values. The transform will still be computed but infs propagate. Nan-like values will be linearly interpolated, which is okay for subsequent time-based analysis but will introduce ringing in frequency-based analyses.
     :type arr: list, tuple, or numpy.ndarray
 
-    :param kernel: kernel function. Must take an integer L > 0 as an 
-    argument and any number of additional, nonkeyword arguments, 
-    and returns a numpy array of shape (L,) that implements the kernel. 
-    The returned array should sum to zero; use the zero_norm function for this.
+    :param kernel: kernel function. Must take an integer L > 0 as an argument and any number of additional, nonkeyword arguments, and returns a numpy array of shape (L,) that implements the kernel. The returned array should sum to zero; use the zero_norm function for this.
     :type kernel: callable
 
-    :param widths: iterable of integers that specify the window widths (L above).
-    Assumed to be in increasing order; if widths is not in increasing order the 
-    results will be garbage.
+    :param widths: iterable of integers that specify the window widths (L above). Assumed to be in increasing order; if widths is not in increasing order the results will be garbage.
     :type widths: iterable
 
     :param k_args: arguments for the kernel function.
     :type k_args: list or tuple
 
-    :param reflection: integer n evaluates to n %4, element of the reflection group
-    that left-multiplies the kernel function. Default is 0 (identity element).
+    :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
-    :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform,
-    None)
+    :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform, None)
 
     """
     arr = np.array( arr )
@@ -562,27 +532,19 @@ def inverse_cusplet(cc,
     :param cc: the cusplet transform array, shape W x T
     :type cc: numpy.ndarray
    
-    :param kernel: kernel function. Must take an integer L > 0 as an 
-    argument and any number of additional, nonkeyword arguments, 
-    and returns a numpy array of shape (L,) that implements the kernel. 
-    The returned array should sum to zero; use the zero_norm function for this.
+    :param kernel: kernel function. Must take an integer L > 0 as an argument and any number of additional, nonkeyword arguments, and returns a numpy array of shape (L,) that implements the kernel. The returned array should sum to zero; use the zero_norm function for this.
     :type kernel: callable
 
-    :param widths: iterable of integers that specify the window widths (L above).
-    Assumed to be in increasing order; if widths is not in increasing order the 
-    results will be garbage.
+    :param widths: iterable of integers that specify the window widths (L above). Assumed to be in increasing order; if widths is not in increasing order the results will be garbage.
     :type widths: iterable
 
     :param k_args: arguments for the kernel function.
     :type k_args: list or tuple
 
-    :param reflection: integer n evaluates to n %4, element of the reflection group
-    that left-multiplies the kernel function. Default is 0 (identity element).
+    :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
-    :returns: numpy.ndarray -- the reconstructed original time series. This time series will have (roughly) 
-    the same functional form as the original, 
-    but it is not guaranteed that its location and scale will be the same.
+    :returns: numpy.ndarray -- the reconstructed original time series. This time series will have (roughly) the same functional form as the original, but it is not guaranteed that its location and scale will be the same.
     """
     # now we will see what group action to operate with
     # cusplet transform is overcomplete so we need only invert one row

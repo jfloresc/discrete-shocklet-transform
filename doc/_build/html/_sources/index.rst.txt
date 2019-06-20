@@ -10,8 +10,8 @@ Welcome to discrete-shocklet-transform's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-discrete-shocklet-transform main
-================================
+Shocklet / cusplet transform
+============================
 .. automodule:: cusplets
    :members:
 
