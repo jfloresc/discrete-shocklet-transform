@@ -57,9 +57,10 @@ def parse_args():
             )
     parser.add_argument(
             '-r',
-            '--rotation',
+            '--reflection',
             type=int,
-            help='Element of R_4 to use. Default is 0 (id). Computed mod 4.'
+            help='Element of R_4 to use. Default is 0 (id). Computed mod 4.',
+            default=0
             )
     parser.add_argument(
             '-b',
@@ -110,6 +111,22 @@ def parse_args():
             help='Number of kernels to use. Ideally (wmax - wmin) / nw would be an integer.',
             default=100
             )
+    parser.add_argument(
+            '-s',
+            '--savespec',
+            type=str,
+            help='Spec for saving. Options are: cc, to just save cusplet transform; '
+            'indic, to save indicator function; all, to save everything',
+            default='all'
+            )
+    parser.add_argument(
+            '-norm',
+            '--norm',
+            type=bool,
+            help='Whether or not to normalize series to be wide-sense stationary '
+            'with intertemporal zero mean and unit variance',
+            default=False
+            )
 
     return parser.parse_known_args()
 
@@ -117,16 +134,67 @@ def parse_args():
 def _process(
         data,
         kernel,
-        rotation,
+        reflection,
         wmin,
         wmax,
         nw,
-        kernel_args
+        kernel_args,
+        outdir,
+        weighting,
+        savespec,
+        b,
+        geval,
+        nback,
+        orig_fname,
+        norm
         ):
     """Computes the shocklet (cusplet) transform on time series data.
 
-    Computes the transform on each row of the passed data. The output will be of shape (data.shape[0], nw, data.shape[1]).
+    Computes the transform on each row of the passed data. The collection of cusplet transforms will be of shape (data.shape[0], nw, data.shape[1]).
     """
+    kernel = getattr(cusplets, kernel)
+    weighting = getattr(cusplets, weighting)
+    widths = np.linspace(wmin, wmax, nw).astype(int)
+
+    for i, row in enumerate( data ):
+        if norm:
+            row = cusplets.normalize(row)
+        
+        cc, _ = cusplets.cusplet( 
+                    row,
+                    kernel,
+                    widths,
+                    k_args=kernel_args,
+                    reflection=reflection
+                )
+        if savespec == 'cc':
+            np.savez_compressed( outdir + f'{orig_fname}-row{i}',
+                    cc=cc )
+        else:
+            extrema, sum_cc, gearray = cusplets.classify_cusps( 
+                    cc,
+                    b=b,
+                    geval=geval
+                    )
+            if savespec == 'indic':
+                np.savez_compressed( outdir + f'{orig_fname}-row{i}',
+                    cc=cc,
+                    indic=sum_cc )
+            else:
+                windows = cusplets.make_components(
+                        gearray,
+                        scan_back=nback
+                        )
+                weighted_sumcc = np.copy(sum_cc)
+
+                for window in windows:
+                    weighted_sumcc[window] *= weighting( row[window] )
+
+                np.savez_compressed( outdir + '/' + f'{orig_fname}-row{i}',
+                    cc=cc,
+                    indic=sum_cc,
+                    windows=windows,
+                    weighted_indic=weighted_sumcc )
 
 
 def main():
@@ -147,7 +215,7 @@ def main():
         print(f'There are no files with ending {args.ending} in {args.input}')
         sys.exit(1)
 
-    elif len(fnames) == 1:
+    elif len(fnames) >= 1:
         try:
             kernel_args = [float(x) for x in kernel_args]
         except Exception as e:
@@ -155,30 +223,46 @@ def main():
             print(f'{e}')
             sys.exit(1)
 
-        data = np.genfromtxt( fnames[0], delimiter=args.delimiter )
-        if len(data.shape) < 2:
-            data = data.reshape(1, data.shape[0])
+        if len(fnames) == 1:
+            data = np.genfromtxt( fnames[0], delimiter=args.delimiter )
+            if len(data.shape) < 2:
+                data = data.reshape(1, data.shape[0])
 
-        # fix up the window size if we need to
-        # first check to see if they are compatible
-        if args.wmin >= args.wmax:
-            print(f'wmin must be less than wmax for sensible output.')
-            sys.exit(1)
-        nt = data.shape[1]
-        wmax = min( args.nw, int(0.5 * nt) )
+            # fix up the window size if we need to
+            # first check to see if they are compatible
+            if args.wmin >= args.wmax:
+                print(f'wmin must be less than wmax for sensible output.')
+                sys.exit(1)
+            nt = data.shape[1]
+            wmax = min( args.nw, int(0.5 * nt) )
 
-        _process(
-                data,
-                args.kernel,
-                args.rotation,
-                args.wmin,
-                wmax,
-                args.nw,
-                kernel_args 
-                )
+            # ensure we have a valid savespec
+            if args.savespec not in ['cc', 'indic', 'all']:
+                print(f'{args.savespec} not one of cc, indic, or all. Defaulting to all.')
+                savespec = 'all'
+            else:
+                savespec = args.savespec
 
-    else:
-        pass
+            _process(
+                    data,
+                    args.kernel,
+                    args.reflection,
+                    args.wmin,
+                    wmax,
+                    args.nw,
+                    kernel_args,
+                    args.output,
+                    args.weighting,
+                    savespec,
+                    args.bvalue,
+                    args.geval,
+                    args.lookback,
+                    fnames[0].split('/')[-1].split('.')[0],
+                    args.norm
+                    )
+
+        else:  # multiprocess over files
+            pass
 
 
 
