@@ -6,7 +6,6 @@ import argparse
 import multiprocessing
 import pathlib
 
-import joblib
 import numpy as np
 
 import cusplets
