@@ -197,6 +197,45 @@ def _process(
                     weighted_indic=weighted_sumcc )
 
 
+def _mp_process( fname, args, kernel_args ):
+    data = np.genfromtxt( fname, delimiter=args.delimiter )
+    if len(data.shape) < 2:
+        data = data.reshape(1, data.shape[0])
+    # fix up the window size if we need to
+    # first check to see if they are compatible
+    if args.wmin >= args.wmax:
+        print(f'wmin must be less than wmax for sensible output.')
+        return
+    nt = data.shape[1]
+    wmax = min( args.nw, int(0.5 * nt) )
+
+    # ensure we have a valid savespec
+    if args.savespec not in ['cc', 'indic', 'all']:
+        print(f'{args.savespec} not one of cc, indic, or all. Defaulting to all.')
+        savespec = 'all'
+    else:
+        savespec = args.savespec
+
+    _process(
+            data,
+            args.kernel,
+            args.reflection,
+            args.wmin,
+            wmax,
+            args.nw,
+            kernel_args,
+            args.output,
+            args.weighting,
+            savespec,
+            args.bvalue,
+            args.geval,
+            args.lookback,
+            fname.split('/')[-1].split('.')[0],
+            args.norm
+            )
+
+
+
 def main():
     args, kernel_args = parse_args()
     # first look for all files that match the requested
@@ -262,7 +301,15 @@ def main():
                     )
 
         else:  # multiprocess over files
-            pass
+            pool = multiprocessing.Pool(None)
+            errors = pool.starmap( 
+                    _mp_process,
+                    zip( 
+                        fnames,
+                        (args for _ in range(len(fnames))),
+                        (kernel_args for _ in range(len(fnames)))
+                        )
+                    )
 
 
 
