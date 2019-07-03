@@ -39,7 +39,7 @@ def parse_args():
             '--delimiter',
             type=str,
             help='Delimiter of entries in files',
-            default=','
+            default='none'
             )
     parser.add_argument(
             '-o',
@@ -198,7 +198,10 @@ def _process(
 
 
 def _mp_process( fname, args, kernel_args ):
-    data = np.genfromtxt( fname, delimiter=args.delimiter )
+    if args.delimiter == 'none':
+        data = np.genfromtxt( fname )
+    else:
+        data = np.genfromtxt( fname, delimiter=args.delimiter )
     if len(data.shape) < 2:
         data = data.reshape(1, data.shape[0])
     # fix up the window size if we need to
@@ -310,7 +313,6 @@ def main():
                         (kernel_args for _ in range(len(fnames)))
                         )
                     )
-
 
 
 if __name__ == "__main__":
