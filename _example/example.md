@@ -27,7 +27,7 @@ plt.xlim(0, 5000 - 1);
 ```
 
 
-![png](output_2_0.png)
+![png](./_example/output_2_0.png)
 
 
 At its core, the DST is just simple cross-correlation of a kernel function $\mathcal{K}$ with a signal such as $x_n$. A windowing parameter $W$ controls up- and down-sampling time so that anomalous dynamics can be found at all relevant timescales. 
@@ -62,7 +62,7 @@ plt.tight_layout()
 ```
 
 
-![png](output_4_0.png)
+![png](./_example/output_4_0.png)
 
 
 Lighter colors indicate large positive values while darker colors indicate large negative values. We see that the immediate output of the DST captures pieces of the time series that sort of "look" like the kernel, which in this case is an upside-down spike-y kind of thing (`cusplets.power_cusp` reflected over the horizontal axis).
@@ -109,15 +109,7 @@ ax2.set_ylabel('$C(n)$')
 ax.set_title('Figure 2', fontsize=15)
 ```
 
-
-
-
-    Text(0.5, 1.0, 'Figure 2')
-
-
-
-
-![png](output_7_1.png)
+![png](./_example/output_7_1.png)
 
 
 We'll work from the bottom up. The blue curve in the bottom panel displays the cusp indicator function, which (usually, unless you specified any custom weightings of the discrete shocklet transform) is roughly equivalent to 
