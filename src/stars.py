@@ -158,14 +158,19 @@ def _process(
     for i, row in enumerate( data ):
         if norm:
             row = cusplets.normalize(row)
-        
-        cc, _ = cusplets.cusplet( 
+        try: 
+            cc, _ = cusplets.cusplet( 
                     row,
                     kernel,
                     widths,
                     k_args=kernel_args,
                     reflection=reflection
-                )
+                    )
+        except Exception as e:
+            print(f'Error occurred in computation of shocklet transform of {orig_fname}')
+            print(f'Error: {e}')
+            return
+
         if savespec == 'cc':
             np.savez_compressed( outdir + f'{orig_fname}-row{i}',
                     cc=cc )
@@ -177,23 +182,31 @@ def _process(
                     )
             if savespec == 'indic':
                 np.savez_compressed( outdir + f'{orig_fname}-row{i}',
-                    cc=cc,
                     indic=sum_cc )
-            else:
+            elif savespec in ['windows', 'weighted', 'all']:
                 windows = cusplets.make_components(
                         gearray,
                         scan_back=nback
                         )
-                weighted_sumcc = np.copy(sum_cc)
+                if savespec == 'windows':
+                    np.savez_compressed( outdir + f'{orig_fname}-row{i}',
+                        windows=windows )
+                
+                else:
+                    weighted_sumcc = np.copy(sum_cc)
 
-                for window in windows:
-                    weighted_sumcc[window] *= weighting( row[window] )
+                    for window in windows:
+                        weighted_sumcc[window] *= weighting( row[window] )
 
-                np.savez_compressed( outdir + '/' + f'{orig_fname}-row{i}',
-                    cc=cc,
-                    indic=sum_cc,
-                    windows=windows,
-                    weighted_indic=weighted_sumcc )
+                    if savespec == 'weighted':
+                        np.savez_compressed( outdir + f'{orig_fname}-row{i}',
+                            weighted_indic=weighted_sumcc )
+                    else:
+                        np.savez_compressed( outdir + '/' + f'{orig_fname}-row{i}',
+                            cc=cc,
+                            indic=sum_cc,
+                            windows=windows,
+                            weighted_indic=weighted_sumcc )
 
 
 def _mp_process( fname, args, kernel_args ):
@@ -312,6 +325,7 @@ def main():
                         (kernel_args for _ in range(len(fnames)))
                         )
                     )
+            sys.exit()
 
 
 if __name__ == "__main__":
