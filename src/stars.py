@@ -51,42 +51,60 @@ def parse_args():
             '-k',
             '--kernel',
             type=str,
-            help='Kernel function to use. Must be in dir(cusplets)',
+            help='Kernel function to use. Must be in dir(cusplets). Pre-written options (no '
+            'need to write code) are: haar, which is the Haar wavelet and looks for pure level '
+            'changes; power_zero_cusp, which is the building block for other cusp kernels and '
+            'looks for constant levels followed by a spike and power-law decay; '
+            'power_cusp, which is a power-law cusp shape; exp_zero_cusp, which is like '
+            'power_zero_cusp except with exponential decay; and exp_cusp, which is like '
+            'power_cusp except with exponential decay. Combining these kernels with a reflection '
+            '(computed using the option `-r <int>`) is probably enough to look for any interesting '
+            'behavior. If you want to write your own kernel function, it must be in cusplets.py and '
+            'conform to the API `function(W, *args, zn=True)` where W is a window size, '
+            '*args are any remaining positional arguments to the function as parameters and must '
+            'be cast-able to `float`, and zn is a boolean corresponding to whether or not to '
+            'ensure that the kernel function integrates to zero, which it should by default. '
+            'Kernel defaults to power_cusp.',
             default='power_cusp'
             )
     parser.add_argument(
             '-r',
             '--reflection',
             type=int,
-            help='Element of R_4 to use. Default is 0 (id). Computed mod 4.',
+            help='Element of the reflection group R_4 to use. Default is 0 (id). Computed mod 4.',
             default=0
             )
     parser.add_argument(
             '-b',
             '--bvalue',
             type=float,
-            help='Multiplier for std dev in classification',
+            help='Multiplier for std dev in classification. Default is b=0.75.',
             default=0.75
             )
     parser.add_argument(
             '-g',
             '--geval',
             type=float,
-            help='Threshold for window construction',
+            help='Threshold for window construction. Default is 0.5.',
             default=0.5
             )
     parser.add_argument(
             '-l',
             '--lookback',
             type=int,
-            help='Number of indices to look back for window construction',
+            help='Number of indices to look back for window construction. Default is 0.',
             default=0
             )
     parser.add_argument(
             '-w',
             '--weighting',
             type=str,
-            help='Method for weighting of cusp indicator functions. Must be in dir(cusplets)',
+            help='Method for weighting of cusp indicator functions. Must be in dir(cusplets). '
+            'Defaults to max_change, the maximum minus the minimum value of original series '
+            'within each window. The other pre-written option (no need to write code) is '
+            'max_rel_change, which computes max_change on the array of log returns of the '
+            'original time series. If you want to write your own weighting function, it must '
+            'be in cusplets.py and correspond to the API `function(arr)` where arr is an array.',
             default='max_change'
             )
     parser.add_argument(
@@ -107,7 +125,8 @@ def parse_args():
             '-nw',
             '--nw',
             type=int,
-            help='Number of kernels to use. Ideally (wmax - wmin) / nw would be an integer.',
+            help='Number of kernels to use. Ideally (wmax - wmin) / nw would be an integer. ' 
+            'Default is 100.',
             default=100
             )
     parser.add_argument(
@@ -115,7 +134,10 @@ def parse_args():
             '--savespec',
             type=str,
             help='Spec for saving. Options are: cc, to just save cusplet transform; '
-            'indic, to save indicator function; all, to save everything',
+            'indic, to save indicator function; windows, to save anomalous windows; '
+            'weighted, to save weighted indicator function; '
+            'all, to save everything. Defaults to all. Files are saved in compressed '
+            '.npz numpy archive format.',
             default='all'
             )
     parser.add_argument(
@@ -123,7 +145,7 @@ def parse_args():
             '--norm',
             type=bool,
             help='Whether or not to normalize series to be wide-sense stationary '
-            'with intertemporal zero mean and unit variance',
+            'with intertemporal zero mean and unit variance. Default is False.',
             default=False
             )
 
