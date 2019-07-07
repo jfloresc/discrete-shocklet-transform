@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import os
+import pathlib
+
 import joblib
 import numpy as np
 from sklearn.neural_network import MLPRegressor
@@ -46,8 +49,8 @@ def make_indic_regression_data(
                               k_args=k_args
                               )
         cusps, cusp_indic, gecusp = cusplets.classify_cusps(cc, b=b_mult, geval=geval)
-        indics.append( cusp_indic[buff_val:-buff_val] ) 
-        x_vars.append( x[buff_val:-buff_val] )
+        indics.append( cusp_indic[buff_val:-buff_val] )  # cut off edge effects 
+        x_vars.append( x[buff_val:-buff_val] )  # same here
 
     indics = np.array( indics )
     x_vars = np.array( x_vars )
@@ -86,7 +89,10 @@ def create_and_train_mlp_model(
         X_train,
         y_train,
         verbose=True,
-        savemodel=True
+        savemodel=True,
+        savedir='./models',
+        savename='mlp_model',
+        overwrite=True
         ):
     model = MLPRegressor( 
             hidden_layer_sizes=(200, 100,),
@@ -97,4 +103,14 @@ def create_and_train_mlp_model(
             early_stopping=True
             )
     fit_model = model.fit(X_train, y_train)
+    if savemodel:
+        outpath = pathlib.Path( savedir ).mkdir(
+            exist_ok=True,
+            parents=True
+            )
+        fname = outpath + '/' + savename + '.joblib.lzma'
+        if os.path.exists( fname ) and not overwrite:
+            print(f'Not saving model since {fname} exists already')
+        else:
+            joblib.dump( fit_model, fname, compress=3 )
     return fit_model
