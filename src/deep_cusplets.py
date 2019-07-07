@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import joblib
 import numpy as np
 from sklearn.neural_network import MLPRegressor
 
@@ -42,7 +43,7 @@ def make_indic_regression_data(
                               x,  
                               kernel,
                               window_widths,
-                              k_args
+                              k_args=k_args
                               )
         cusps, cusp_indic, gecusp = cusplets.classify_cusps(cc, b=b_mult, geval=geval)
         indics.append( cusp_indic[buff_val:-buff_val] ) 
@@ -64,7 +65,29 @@ def make_indic_regression_data(
     return X_vars[:train_ind], y_vars[:train_ind], X_vars[train_ind:], y_vars[train_ind:]
 
 
-def create_and_train_mlp_model(X_train, y_train, verbose=True):
+def predict(
+        model,
+        time_series_matrix,
+        feature_dim
+        ):
+    time_series_matrix = np.array( time_series_matrix )
+    if len( time_series_matrix.shape ) == 1:
+        time_series_matrix = time_series_matrix.reshape(1, time_series_matrix.shape[0])
+    time_series_matrix = time_series_matrix.astype(float)
+    X_vars = np.array( [stat_tools.make_moving_tensor(time_series_matrix[i], feature_dim)\
+            for i in range(time_series_matrix.shape[0])] )
+    X_vars, mean, std = stat_tools.row_normalize( X_vars )
+    X_vars[np.isnan(X_vars)] = 0.
+    X_vars = np.vstack( X_vars )
+    return model.predict( X_vars )
+
+
+def create_and_train_mlp_model(
+        X_train,
+        y_train,
+        verbose=True,
+        savemodel=True
+        ):
     model = MLPRegressor( 
             hidden_layer_sizes=(200, 100,),
             solver='adam',
