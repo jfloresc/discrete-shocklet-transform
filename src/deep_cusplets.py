@@ -25,6 +25,7 @@ def make_indic_regression_data(
         train_frac=0.8
         ):
     # make everything compatible for what follows
+    print('formatting data')
     time_series_matrix = np.array( time_series_matrix )
     if len( time_series_matrix.shape ) == 1:
         time_series_matrix = time_series_matrix.reshape(1, time_series_matrix.shape[0])
@@ -41,6 +42,7 @@ def make_indic_regression_data(
     window_widths = np.linspace( wmin, wmax, nw ).astype(int)
     kernel = getattr(cusplets, kernel)
 
+    print('computing cusplet transforms, this might take awhile')
     for i, x in enumerate( time_series_matrix ):
         cc, _ = cusplets.cusplet(
                               x,  
@@ -66,6 +68,10 @@ def make_indic_regression_data(
     
     train_ind = int( train_frac * len(y_vars) )
     return X_vars[:train_ind], y_vars[:train_ind], X_vars[train_ind:], y_vars[train_ind:]
+
+
+def classify_cusps(indic, geval=0.5):
+    return np.where(indic > geval)
 
 
 def predict(
@@ -94,23 +100,26 @@ def create_and_train_mlp_model(
         savename='mlp_model',
         overwrite=True
         ):
+    data_dim = X_train.shape[1]
     model = MLPRegressor( 
-            hidden_layer_sizes=(200, 100,),
+            hidden_layer_sizes=(int(data_dim / 2), int(data_dim / 4),),
             solver='adam',
             max_iter=1000,
             verbose=verbose,
-            alpha=0.001,
-            early_stopping=True
+            alpha=0.0025,
+            early_stopping=True,
+            tol=5e-4
             )
     fit_model = model.fit(X_train, y_train)
     if savemodel:
-        outpath = pathlib.Path( savedir ).mkdir(
+        pathlib.Path( savedir ).mkdir(
             exist_ok=True,
             parents=True
             )
-        fname = outpath + '/' + savename + '.joblib.lzma'
+        fname = savedir + '/' + savename + '.joblib.lzma'
         if os.path.exists( fname ) and not overwrite:
             print(f'Not saving model since {fname} exists already')
         else:
             joblib.dump( fit_model, fname, compress=3 )
+            print(f'saved model at {fname}')
     return fit_model
