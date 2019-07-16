@@ -11,9 +11,9 @@ import cusplets  # aka shocklet
 
 # Discrete Shocklet (cusplet?) Transform
 
-This provides a few examples of the discrete shocklet (affectiontely referred to as a cusplet by some...) transform---or DST---in practice. We will show how the group action of $R_4$ on the kernel function affects the output of the transform and demonstrate the automated extraction of anomalous dynamics using the post-processing algorithms. You can find theoretical information about this collection of algorithms---and some applications---in the original paper: http://compstorylab.org/share/papers/dewhurst2019a/. 
+This provides a few examples of the discrete shocklet (affectiontely referred to as a cusplet by some...) transform---or DST---in practice. We will show how the group action of $`R_4`$ on the kernel function affects the output of the transform and demonstrate the automated extraction of anomalous dynamics using the post-processing algorithms. You can find theoretical information about this collection of algorithms---and some applications---in the original paper: http://compstorylab.org/share/papers/dewhurst2019a/. 
 
-First we will show what a cusplet transform actually looks like. We will use a pretty boring time series for this: just a random walk, $x_n - x_{n-1} = u_n$, where $u_n \sim \mathcal{U}(\{-1, 1\})$.
+First we will show what a cusplet transform actually looks like. We will use a pretty boring time series for this: just a random walk, $`x_n - x_{n-1} = u_n`$, where $`u_n \sim \mathcal{U}(\{-1, 1\})`$.
 
 
 ```python
@@ -30,9 +30,9 @@ plt.xlim(0, 5000 - 1);
 ![png](./_example/output_2_0.png)
 
 
-At its core, the DST is just simple cross-correlation of a kernel function $\mathcal{K}$ with a signal such as $x_n$. A windowing parameter $W$ controls up- and down-sampling time so that anomalous dynamics can be found at all relevant timescales. 
+At its core, the DST is just simple cross-correlation of a kernel function $`\mathcal{K}`$ with a signal such as $`x_n`$. A windowing parameter $W$ controls up- and down-sampling time so that anomalous dynamics can be found at all relevant timescales. 
 
-Let's see what the immediate output of the DST looks like. We will use a kernel function that looks like $\mathcal{K}(n) \sim |n - n_0|^{-\theta}$.
+Let's see what the immediate output of the DST looks like. We will use a kernel function that looks like $`\mathcal{K}(n) \sim |n - n_0|^{-\theta}`$.
 
 
 ```python
@@ -67,11 +67,11 @@ plt.tight_layout()
 
 Lighter colors indicate large positive values while darker colors indicate large negative values. We see that the immediate output of the DST captures pieces of the time series that sort of "look" like the kernel, which in this case is an upside-down spike-y kind of thing (`cusplets.power_cusp` reflected over the horizontal axis).
 
-From Figure 1 we can also see that the DST captures this behavior over all timescales. There are similar spikes in DST intensity for the small-ish peak near $n = 250$ as for the much larger ones that peaks near $n = 2000$ and $n = 3500$.
+From Figure 1 we can also see that the DST captures this behavior over all timescales. There are similar spikes in DST intensity for the small-ish peak near $`n = 250`$ as for the much larger ones that peaks near $`n = 2000`$ and $`n = 3500`$.
 
 ### Thresholding procedures
 
-Now we can post-process. Let's find out in what actual windows of time $x_n$ 
+Now we can post-process. Let's find out in what actual windows of time $`x_n`$ 
 had this sort of cusp-y behavior.
 
 
@@ -117,5 +117,5 @@ We'll work from the bottom up. The blue curve in the bottom panel displays the c
 $$
 C^* \geq \mu_C + b \sigma_C,
 $$
-where $\mu_C$ and $\sigma_C$ are the mean and standard deviation of the cusp indicator function and $b$ is a tunable parameter that adjusts the sensitivity of the thresholding.
+where $`\mu_C`$ and $`\sigma_C`$ are the mean and standard deviation of the cusp indicator function and $b$ is a tunable parameter that adjusts the sensitivity of the thresholding.
 The top window again displays the $C^*$ in vertical bars and windows where the cusp indicator function exceeds some other threshold $b'$.
