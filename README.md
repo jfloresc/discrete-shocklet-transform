@@ -113,9 +113,9 @@ ax.set_title('Figure 2', fontsize=15)
 
 
 We'll work from the bottom up. The blue curve in the bottom panel displays the cusp indicator function, which (usually, unless you specified any custom weightings of the discrete shocklet transform) is roughly equivalent to 
-`cusplets.zero_norm( np.sum(cc, axis=0) )`. The vertical bars denote relative maxima $C^*$ of the cusp indicator function that satisfy the additional condition
-$$
+`cusplets.zero_norm( np.sum(cc, axis=0) )`. The vertical bars denote relative maxima $`C^*`$ of the cusp indicator function that satisfy the additional condition
+$$`
 C^* \geq \mu_C + b \sigma_C,
-$$
+`$$
 where $`\mu_C`$ and $`\sigma_C`$ are the mean and standard deviation of the cusp indicator function and $b$ is a tunable parameter that adjusts the sensitivity of the thresholding.
-The top window again displays the $C^*$ in vertical bars and windows where the cusp indicator function exceeds some other threshold $b'$.
+The top window again displays the $`C^*`$ in vertical bars and windows where the cusp indicator function exceeds some other threshold $`b'`$.
