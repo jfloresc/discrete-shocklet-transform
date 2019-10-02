@@ -46,22 +46,66 @@ def haar(L, zn=True):
     return res
 
 
-def power_cusp(L, b, zn=True):
-    res = power_zero_cusp(L, b, zn=zn) + power_zero_cusp(L, b, zn=zn)[::-1]
+def power_law_zero_cusp(L, b, zn=True, startpt=1, endpt=4):
+    x = np.linspace(startpt, endpt, L)
+    res = x**(-b)
+    res[:len(res) // 2] = 0
     if zn:
         return zero_norm(res)
     return res
 
 
-def pitchfork(L, b, zn=True):
-    res = power_zero_cusp(L, 2*b, zn=zn)[::-1] + power_cusp(L, b, zn=zn) + power_zero_cusp(L, 2*b, zn=zn)
+def power_law_cusp(L, b, zn=True, startpt=1, endpt=4):
+    res = power_law_zero_cusp(L,
+            b,
+            zn=zn,
+            startpt=startpt,
+            endpt=endpt) + power_law_zero_cusp(L,
+                    b,
+                    zn=zn,
+                    startpt=startpt,
+                    endpt=endpt)[::-1]
     if zn:
         return zero_norm(res)
     return res
 
 
-def power_zero_cusp(L, b, zn=True):
-    x = np.linspace(1, 4, L)
+def power_cusp(L, b, zn=True, startpt=1, endpt=4):
+    res = power_zero_cusp(L,
+            b,
+            zn=zn,
+            startpt=startpt,
+            endpt=endpt) + power_zero_cusp(L,
+                    b,
+                    zn=zn,
+                    startpt=startpt,
+                    endpt=endpt)[::-1]
+    if zn:
+        return zero_norm(res)
+    return res
+
+
+def pitchfork(L, b, zn=True, startpt=1, endpt=4):
+    res = power_zero_cusp(L, 
+            2*b,
+            zn=zn, 
+            startpt=startpt,
+            endpt=endpt)[::-1] + power_cusp(L,
+                    b,
+                    zn=zn,
+                    startpt=startpt,
+                    endpt=endpt) + power_zero_cusp(L,
+                            2*b,
+                            zn=zn,
+                            startpt=startpt,
+                            endpt=endpt)
+    if zn:
+        return zero_norm(res)
+    return res
+
+
+def power_zero_cusp(L, b, zn=True, startpt=1, endpt=4):
+    x = np.linspace(startpt, endpt, L)
     res = x**b
     res[len(res) // 2:] = 0
     if zn:
@@ -69,15 +113,19 @@ def power_zero_cusp(L, b, zn=True):
     return res
 
 
-def exp_cusp(L, a, zn=True):
-    res = exp_zero_cusp(L, a, zn=zn) + exp_zero_cusp(L, a, zn=zn)[::-1]
+def exp_cusp(L, a, zn=True, startpt=1, endpt=4):
+    res = exp_zero_cusp(L, a, zn=zn,
+            startpt=startpt,
+            endpt=endpt) + exp_zero_cusp(L, a, zn=zn,
+                    startpt=startpt,
+                    endpt=endpt)[::-1]
     if zn:
         return zero_norm(res)
     return res
 
 
-def exp_zero_cusp(L, a, zn=True):
-    x = np.linspace(1, 4, L)
+def exp_zero_cusp(L, a, zn=True, startpt=1, endpt=4):
+    x = np.linspace(startpt, endpt, L)
     res = np.exp(a * x)
     res[len(res) // 2:] = 0
     if zn:
