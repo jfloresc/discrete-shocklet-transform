@@ -17,7 +17,10 @@ Runs the Shocklet Transform And Ranking (STAR) algorithm on data
 optional arguments:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
-                        Path to files on which to run the algorithm. This file should be in row-major order. That is, it should be a N_variable x T matrix, where T is the number of timesteps.
+                        Path to files on which to run the algorithm. 
+                                    This file should be in row-major order. That is, 
+                                    it should be a N_variable x T matrix, where T is 
+                                    the number of timesteps.
   -e ENDING, --ending ENDING
                         Ending of files on which to run algorithm. Must be readable to numpy.genfromtxt()
   -d DELIMITER, --delimiter DELIMITER
@@ -25,7 +28,20 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         Path to which to save output
   -k KERNEL, --kernel KERNEL
-                        Kernel function to use. Must be in dir(cusplets). Pre-written options (no need to write code) are: haar, which is the Haar wavelet and looks for pure level changes; power_zero_cusp, which is the building block for other cusp kernels and looks for power (monomial) growth followed by an abrupt drop to constant low levels; power_cusp, which is a power cusp shape; exp_zero_cusp, which is like power_zero_cusp except with exponential growth; and exp_cusp, which is like power_cusp except with exponential growth. Combining these kernels with a reflection (computed using the option `-r <int>`) is probably enough to look for any interesting behavior. If you want to write your own kernel function, it must be in cusplets.py and conform to the API `function(W, *args, zn=True)` where W is a window size, *args are any remaining positional arguments to the function as parameters and must be cast-able to `float`, and zn is a boolean corresponding to whether or not to ensure that the kernel function integrates to zero, which it should by default. Kernel defaults to power_cusp.
+                        Kernel function to use. Must be in dir(cusplets). Pre-written options (no 
+                                    need to write code) are: haar, which is the Haar wavelet and looks for pure level 
+                                    changes; power_zero_cusp, which is the building block for other cusp kernels and 
+                                    looks for power (monomial) growth followed by an abrupt drop to constant low levels; 
+                                    power_cusp, which is a power cusp shape; exp_zero_cusp, which is like 
+                                    power_zero_cusp except with exponential growth; and exp_cusp, which is like 
+                                    power_cusp except with exponential growth. Combining these kernels with a reflection 
+                                    (computed using the option `-r <int>`) is probably enough to look for any interesting 
+                                    behavior. If you want to write your own kernel function, it must be in cusplets.py and 
+                                    conform to the API `function(W, *args, zn=True)` where W is a window size, 
+                                    *args are any remaining positional arguments to the function as parameters and must 
+                                    be cast-able to `float`, and zn is a boolean corresponding to whether or not to 
+                                    ensure that the kernel function integrates to zero, which it should by default. 
+                                    Kernel defaults to power_cusp.
   -r REFLECTION, --reflection REFLECTION
                         Element of the reflection group R_4 to use. Default is 0 (id). Computed mod 4.
   -b BVALUE, --bvalue BVALUE
@@ -35,16 +51,26 @@ optional arguments:
   -l LOOKBACK, --lookback LOOKBACK
                         Number of indices to look back for window construction. Default is 0.
   -w WEIGHTING, --weighting WEIGHTING
-                        Method for weighting of cusp indicator functions. Must be in dir(cusplets). Defaults to max_change, the maximum minus the minimum value of original series within each window. The other pre-written option (no need to write code) is max_rel_change, which computes max_change on the array of log returns of the original time series. If you want to write your own weighting function, it must be in cusplets.py and correspond to the API `function(arr)` where arr is an array.
+                        Method for weighting of cusp indicator functions. Must be in dir(cusplets). 
+                                    Defaults to max_change, the maximum minus the minimum value of original series 
+                                    within each window. The other pre-written option (no need to write code) is 
+                                    max_rel_change, which computes max_change on the array of log returns of the 
+                                    original time series. If you want to write your own weighting function, it must 
+                                    be in cusplets.py and correspond to the API `function(arr)` where arr is an array.
   -wmin WMIN, --wmin WMIN
                         Smallest kernel size. Defaults to 10.
   -wmax WMAX, --wmax WMAX
                         Largest kernel size. Defaults to min{500, 1/2 length of time series}.
   -nw NW, --nw NW       Number of kernels to use. Ideally (wmax - wmin) / nw would be an integer. Default is 100.
   -s SAVESPEC, --savespec SAVESPEC
-                        Spec for saving. Options are: cc, to just save cusplet transform; indic, to save indicator function; windows, to save anomalous windows; weighted, to save weighted indicator function; all, to save everything. Defaults to all. Files are saved in compressed .npz numpy archive format.
+                        Spec for saving. Options are: cc, to just save cusplet transform; 
+                                    indic, to save indicator function; windows, to save anomalous windows; 
+                                    weighted, to save weighted indicator function; 
+                                    all, to save everything. Defaults to all. Files are saved in compressed 
+                                    .npz numpy archive format.
   -norm NORM, --norm NORM
-                        Whether or not to normalize series to be wide-sense stationary with intertemporal zero mean and unit variance. Default is False.
+                        Whether or not to normalize series to be wide-sense stationary 
+                                    with intertemporal zero mean and unit variance. Default is False.
 ```
 
 Further ado (_viz_: what is actually happening under the hood) proceeds below.
