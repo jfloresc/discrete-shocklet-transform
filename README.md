@@ -18,9 +18,13 @@ optional arguments:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
                         Path to files on which to run the algorithm. 
-                                    This file should be in row-major order. That is, 
-                                    it should be a N_variable x T matrix, where T is 
-                                    the number of timesteps.
+                                    The files should be in row-major order. That is, 
+                                    they should be a N_variable x T matrix, where T is 
+                                    the number of timesteps. This algorithm multiprocesses over 
+                                    files so if your time series are very long it could be significantly
+                                    faster to break them up into multiple files, one time series per file.
+                                    (This is true only if you have many cores on which processing can occur 
+                                    in parallel.)
   -e ENDING, --ending ENDING
                         Ending of files on which to run algorithm. Must be readable to numpy.genfromtxt()
   -d DELIMITER, --delimiter DELIMITER
@@ -72,6 +76,7 @@ optional arguments:
                         Whether or not to normalize series to be wide-sense stationary 
                                     with intertemporal zero mean and unit variance. Default is False.
 ```
+
 A key point: *any additional arguments passed to `./star.py` after the named arguments above are interpreted as arguments to be passed to the kernel function*. So, if you're using the default settings and run something like `./star.py -i ./_test/ -e csv`, you'll get an error that says
 
 ```
@@ -81,7 +86,7 @@ Error: power_cusp() missing 1 required positional argument: 'b'
 
 This is expected behavior: you have to pass this argument in at the end, so instead you'd enter `./star.py -i ./_test/ -e csv 3` and everything would be fine.
 
-## More technical details
+# More technical details
 
 Further ado (_viz_: what is actually happening under the hood) proceeds below.
 

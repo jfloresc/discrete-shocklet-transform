@@ -21,9 +21,13 @@ def parse_args():
             '--input',
             type=str,
             help='''Path to files on which to run the algorithm. 
-            This file should be in row-major order. That is, 
-            it should be a N_variable x T matrix, where T is 
-            the number of timesteps.''',
+            The files should be in row-major order. That is, 
+            they should be a N_variable x T matrix, where T is 
+            the number of timesteps. This algorithm multiprocesses over 
+            files so if your time series are very long it could be significantly
+            faster to break them up into multiple files, one time series per file.
+            (This is true only if you have many cores on which processing can occur 
+            in parallel.)''',
             default='.'
             )
     parser.add_argument(
