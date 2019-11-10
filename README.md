@@ -72,6 +72,16 @@ optional arguments:
                         Whether or not to normalize series to be wide-sense stationary 
                                     with intertemporal zero mean and unit variance. Default is False.
 ```
+A key point: *any additional arguments passed to `./star.py` after the named arguments above are interpreted as arguments to be passed to the kernel function*. So, if you're using the default settings and run something like `./star.py -i ./_test/ -e csv`, you'll get an error that says
+
+```
+Error occurred in computation of shocklet transform of test
+Error: power_cusp() missing 1 required positional argument: 'b'
+```
+
+This is expected behavior: you have to pass this argument in at the end, so instead you'd enter `./star.py -i ./_test/ -e csv 3` and everything would be fine.
+
+## More technical details
 
 Further ado (_viz_: what is actually happening under the hood) proceeds below.
 
