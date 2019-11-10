@@ -20,10 +20,10 @@ def parse_args():
             '-i',
             '--input',
             type=str,
-            help='Path to files on which to run the algorithm. '
-            'This file should be in row-major order. That is, '
-            'it should be a N_variable x T matrix, where T is '
-            'the number of timesteps.',
+            help='''Path to files on which to run the algorithm. 
+            This file should be in row-major order. That is, 
+            it should be a N_variable x T matrix, where T is 
+            the number of timesteps.''',
             default='.'
             )
     parser.add_argument(
@@ -51,20 +51,20 @@ def parse_args():
             '-k',
             '--kernel',
             type=str,
-            help='Kernel function to use. Must be in dir(cusplets). Pre-written options (no '
-            'need to write code) are: haar, which is the Haar wavelet and looks for pure level '
-            'changes; power_zero_cusp, which is the building block for other cusp kernels and '
-            'looks for power (monomial) growth followed by an abrupt drop to constant low levels; '
-            'power_cusp, which is a power cusp shape; exp_zero_cusp, which is like '
-            'power_zero_cusp except with exponential growth; and exp_cusp, which is like '
-            'power_cusp except with exponential growth. Combining these kernels with a reflection '
-            '(computed using the option `-r <int>`) is probably enough to look for any interesting '
-            'behavior. If you want to write your own kernel function, it must be in cusplets.py and '
-            'conform to the API `function(W, *args, zn=True)` where W is a window size, '
-            '*args are any remaining positional arguments to the function as parameters and must '
-            'be cast-able to `float`, and zn is a boolean corresponding to whether or not to '
-            'ensure that the kernel function integrates to zero, which it should by default. '
-            'Kernel defaults to power_cusp.',
+            help='''Kernel function to use. Must be in dir(cusplets). Pre-written options (no 
+            need to write code) are: haar, which is the Haar wavelet and looks for pure level 
+            changes; power_zero_cusp, which is the building block for other cusp kernels and 
+            looks for power (monomial) growth followed by an abrupt drop to constant low levels; 
+            power_cusp, which is a power cusp shape; exp_zero_cusp, which is like 
+            power_zero_cusp except with exponential growth; and exp_cusp, which is like 
+            power_cusp except with exponential growth. Combining these kernels with a reflection 
+            (computed using the option `-r <int>`) is probably enough to look for any interesting 
+            behavior. If you want to write your own kernel function, it must be in cusplets.py and 
+            conform to the API `function(W, *args, zn=True)` where W is a window size, 
+            *args are any remaining positional arguments to the function as parameters and must 
+            be cast-able to `float`, and zn is a boolean corresponding to whether or not to 
+            ensure that the kernel function integrates to zero, which it should by default. 
+            Kernel defaults to power_cusp.''',
             default='power_cusp'
             )
     parser.add_argument(
@@ -99,12 +99,12 @@ def parse_args():
             '-w',
             '--weighting',
             type=str,
-            help='Method for weighting of cusp indicator functions. Must be in dir(cusplets). '
-            'Defaults to max_change, the maximum minus the minimum value of original series '
-            'within each window. The other pre-written option (no need to write code) is '
-            'max_rel_change, which computes max_change on the array of log returns of the '
-            'original time series. If you want to write your own weighting function, it must '
-            'be in cusplets.py and correspond to the API `function(arr)` where arr is an array.',
+            help='''Method for weighting of cusp indicator functions. Must be in dir(cusplets). 
+            Defaults to max_change, the maximum minus the minimum value of original series 
+            within each window. The other pre-written option (no need to write code) is 
+            max_rel_change, which computes max_change on the array of log returns of the 
+            original time series. If you want to write your own weighting function, it must 
+            be in cusplets.py and correspond to the API `function(arr)` where arr is an array.''',
             default='max_change'
             )
     parser.add_argument(
@@ -133,19 +133,19 @@ def parse_args():
             '-s',
             '--savespec',
             type=str,
-            help='Spec for saving. Options are: cc, to just save cusplet transform; '
-            'indic, to save indicator function; windows, to save anomalous windows; '
-            'weighted, to save weighted indicator function; '
-            'all, to save everything. Defaults to all. Files are saved in compressed '
-            '.npz numpy archive format.',
+            help='''Spec for saving. Options are: cc, to just save cusplet transform; 
+            indic, to save indicator function; windows, to save anomalous windows; 
+            weighted, to save weighted indicator function; 
+            all, to save everything. Defaults to all. Files are saved in compressed 
+            .npz numpy archive format.''',
             default='all'
             )
     parser.add_argument(
             '-norm',
             '--norm',
             type=bool,
-            help='Whether or not to normalize series to be wide-sense stationary '
-            'with intertemporal zero mean and unit variance. Default is False.',
+            help='''Whether or not to normalize series to be wide-sense stationary 
+            with intertemporal zero mean and unit variance. Default is False.''',
             default=False
             )
 
