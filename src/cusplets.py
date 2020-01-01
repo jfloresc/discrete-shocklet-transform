@@ -133,7 +133,7 @@ def exp_zero_cusp(L, a, zn=True, startpt=1, endpt=4):
     return res
 
 
-def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None):
+def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None, method='fft'):
     """
     Implements the discrete cusplet transform.
 
@@ -151,6 +151,9 @@ def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None):
 
     :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
+
+    :param method: one of 'direct' or 'fft'
+    :type method: `str`
 
     :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform, k -- the calculated kernel function)
     """
@@ -183,7 +186,7 @@ def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None):
         elif reflection == 3:
             k = -k[::-1]
 
-        cc[i] = width_weights[i] * np.correlate(arr, k, mode='same')
+        cc[i] = width_weights[i] * signal.correlate(arr, k, mode='same', method=method)
     return cc, k
 
 
