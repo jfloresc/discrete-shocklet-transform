@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import sys
 import os
 import argparse
