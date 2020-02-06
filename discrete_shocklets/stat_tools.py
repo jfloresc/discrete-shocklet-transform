@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import numpy as np
 
 
@@ -7,21 +5,23 @@ def diff(sequence, ghost=True):
     """
     Implements backwards difference, which is necessary to avoid looking forward in time
 
-    :param sequence: sequence to differencew
+    :param sequence: sequence to difference
     :type sequence: iterable
+    :param ghost:
+    :type ghost: bool
     :returns: backwards difference given by :math:`x(n) - x(n-1)` of length `len(sequence) - 1`
     :rtype: numpy.ndarray
 
     """
     if not ghost:
         x = np.asarray(sequence)
-        ret = np.asarray( [x[n] - x[n-1] for n in range(1, len(x))] )
+        ret = np.asarray([x[n] - x[n - 1] for n in range(1, len(x))])
         return ret
     else:
         x = np.empty(len(sequence) + 1)
         x[1:] = sequence
         x[0] = sequence[0]
-        ret = np.asarray( [x[n] - x[n-1] for n in range(1, len(x))] )
+        ret = np.asarray([x[n] - x[n - 1] for n in range(1, len(x))])
         return ret
 
 
@@ -38,8 +38,8 @@ def make_seq_prediction_data(sequence, X_lag, y_lag):
     :returns: X_lag, a (n - y_lag) x X_lag 2d tensor, and y_lag, a (n - X_lag) x y_lag 2d tensor
     :rtype: numpy.ndarray
     """
-    X = make_moving_tensor( sequence[:-y_lag], X_lag )
-    y = make_moving_tensor( sequence[X_lag:], y_lag )
+    X = make_moving_tensor(sequence[:-y_lag], X_lag)
+    y = make_moving_tensor(sequence[X_lag:], y_lag)
     return X, y
 
 
@@ -56,7 +56,7 @@ def make_moving_tensor(tensor, lag):
 
     """
     lag = int(lag)
-    return np.asarray( [tensor[n : n + lag] for n in range(tensor.shape[0] - lag)] )
+    return np.asarray([tensor[n: n + lag] for n in range(tensor.shape[0] - lag)])
 
 
 def row_normalize(X):
@@ -103,22 +103,21 @@ def row_normalize(X):
 
 def row_unnormalize(X, means, stds):
     """ 
-        Takes a unit variance, zero mean rank 2 tensor with its mean and std vectors and unnormalizes it        
+    Takes a unit variance, zero mean rank 2 tensor with its mean and std vectors and unnormalizes it
 
-        Defines a function :math:`\psi: \mathbb{R}^{n \\times m}
-        \\times \mathbb{R}^n \\times \mathbb{R}^n \\rightarrow \mathbb{R}^{n \\times m }`
-        This function together with ``row_normalize``, :math:`\phi`, give the identity:
-        :math:`(\psi \circ \phi)(X) = X`. 
+    Defines a function :math:`\psi: \mathbb{R}^{n \\times m}
+    \\times \mathbb{R}^n \\times \mathbb{R}^n \\rightarrow \mathbb{R}^{n \\times m }`
+    This function together with ``row_normalize``, :math:`\phi`, give the identity:
+    :math:`(\psi \circ \phi)(X) = X`.
 
-        :param X: rank 2 tensor with unit variance and zero mean
-        :type X: numpy.ndarray
-        :param means: rank 1 tensor of the means taken across rows of X
-        :type means: numpy.ndarray
-        :param stds: rank 1 tensor of the stds taken across rows of X
-        :type stds: numpy.ndarray
-        :returns: un-normalized X 
-        :rtype: numpy.ndarray
-
+    :param X: rank 2 tensor with unit variance and zero mean
+    :type X: numpy.ndarray
+    :param means: rank 1 tensor of the means taken across rows of X
+    :type means: numpy.ndarray
+    :param stds: rank 1 tensor of the stds taken across rows of X
+    :type stds: numpy.ndarray
+    :returns: un-normalized X
+    :rtype: numpy.ndarray
     """
     for row in range(X.shape[0]):
         X[row] *= stds[row]

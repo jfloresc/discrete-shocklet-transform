@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import numpy as np
 from scipy import signal
 
@@ -30,7 +28,7 @@ def normalize(arr, stats=False):
     normed = (arr - mean) / std
     if not stats:
         return normed
-    return normed, mean, std 
+    return normed, mean, std
 
 
 def renormalize(arr, mean, std):
@@ -48,7 +46,7 @@ def haar(L, zn=True):
 
 def power_law_zero_cusp(L, b, zn=True, startpt=1, endpt=4):
     x = np.linspace(startpt, endpt, L)
-    res = x**(-b)
+    res = x ** (-b)
     res[:len(res) // 2] = 0
     if zn:
         return zero_norm(res)
@@ -56,49 +54,63 @@ def power_law_zero_cusp(L, b, zn=True, startpt=1, endpt=4):
 
 
 def power_law_cusp(L, b, zn=True, startpt=1, endpt=4):
-    res = power_law_zero_cusp(L,
-            b,
-            zn=zn,
-            startpt=startpt,
-            endpt=endpt) + power_law_zero_cusp(L,
-                    b,
-                    zn=zn,
-                    startpt=startpt,
-                    endpt=endpt)[::-1]
+    res = power_law_zero_cusp(
+        L,
+        b,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt
+    ) + power_law_zero_cusp(
+        L,
+        b,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt
+    )[::-1]
     if zn:
         return zero_norm(res)
     return res
 
 
 def power_cusp(L, b, zn=True, startpt=1, endpt=4):
-    res = power_zero_cusp(L,
-            b,
-            zn=zn,
-            startpt=startpt,
-            endpt=endpt) + power_zero_cusp(L,
-                    b,
-                    zn=zn,
-                    startpt=startpt,
-                    endpt=endpt)[::-1]
+    res = power_zero_cusp(
+        L,
+        b,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt,
+    ) + power_zero_cusp(
+        L,
+        b,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt,
+    )[::-1]
     if zn:
         return zero_norm(res)
     return res
 
 
 def pitchfork(L, b, zn=True, startpt=1, endpt=4):
-    res = power_zero_cusp(L, 
-            2*b,
-            zn=zn, 
-            startpt=startpt,
-            endpt=endpt)[::-1] + power_cusp(L,
-                    b,
-                    zn=zn,
-                    startpt=startpt,
-                    endpt=endpt) + power_zero_cusp(L,
-                            2*b,
-                            zn=zn,
-                            startpt=startpt,
-                            endpt=endpt)
+    res = power_zero_cusp(
+        L,
+        2 * b,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt,
+    )[::-1] + power_cusp(
+        L,
+        b,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt
+    ) + power_zero_cusp(
+        L,
+        2 * b,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt,
+    )
     if zn:
         return zero_norm(res)
     return res
@@ -106,7 +118,7 @@ def pitchfork(L, b, zn=True, startpt=1, endpt=4):
 
 def power_zero_cusp(L, b, zn=True, startpt=1, endpt=4):
     x = np.linspace(startpt, endpt, L)
-    res = x**b
+    res = x ** b
     res[len(res) // 2:] = 0
     if zn:
         return zero_norm(res)
@@ -114,11 +126,19 @@ def power_zero_cusp(L, b, zn=True, startpt=1, endpt=4):
 
 
 def exp_cusp(L, a, zn=True, startpt=1, endpt=4):
-    res = exp_zero_cusp(L, a, zn=zn,
-            startpt=startpt,
-            endpt=endpt) + exp_zero_cusp(L, a, zn=zn,
-                    startpt=startpt,
-                    endpt=endpt)[::-1]
+    res = exp_zero_cusp(
+        L,
+        a,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt,
+    ) + exp_zero_cusp(
+        L,
+        a,
+        zn=zn,
+        startpt=startpt,
+        endpt=endpt,
+    )[::-1]
     if zn:
         return zero_norm(res)
     return res
@@ -133,7 +153,7 @@ def exp_zero_cusp(L, a, zn=True, startpt=1, endpt=4):
     return res
 
 
-def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None, method='fft'):
+def cusplet(arr, kernel, widths, k_args=None, reflection=0, width_weights=None, method='fft'):
     """
     Implements the discrete cusplet transform.
 
@@ -152,12 +172,18 @@ def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None, me
     :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
+    :param width_weights:
+    :type width_weights:
+
     :param method: one of 'direct' or 'fft'
     :type method: `str`
 
     :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform, k -- the calculated kernel function)
     """
-    arr = np.array( arr )
+    if k_args is None:
+        k_args = []
+
+    arr = np.array(arr)
     cc = np.zeros((len(widths), len(arr)))
 
     # we need to fill all nans
@@ -167,13 +193,13 @@ def cusplet(arr, kernel, widths, k_args=[], reflection=0, width_weights=None, me
     nonzero_fn = lambda x: x.nonzero()[0]
 
     arr[nans] = np.interp(nonzero_fn(nans),
-            nonzero_fn(~nans),
-            arr[~nans])
+                          nonzero_fn(~nans),
+                          arr[~nans])
 
     # allow for weighting of width importance
     if width_weights is None:
         width_weights = np.ones_like(widths)
-   
+
     # now we will see what group action to operate with
     for i, w in enumerate(widths):
         k = kernel(w, *k_args)
@@ -209,26 +235,32 @@ def cusplet_parameter_sweep(arr, kernel, widths, k_args, reflection=0, width_wei
     :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
+    :param width_weights:
+    :type width_weights:
+
+    :param k_weights:
+    :type k_weights:
+
     :returns: numpy.ndarray -- numpy array of shape (L, n, len(k_args)), the cusplet transform
     """
     k_args = np.array(k_args)
 
     if k_weights is None:
         k_weights = np.ones(k_args.shape[0])
-    
+
     cc = np.zeros((len(widths), len(arr), len(k_args)))
-    
+
     for i, k_arg in enumerate(k_args):
         cres, _ = cusplet(arr,
-                kernel,
-                widths,
-                k_args=k_arg,
-                reflection=reflection,
-                width_weights=width_weights)
+                          kernel,
+                          widths,
+                          k_args=k_arg,
+                          reflection=reflection,
+                          width_weights=width_weights)
         cc[:, :, i] = cres * k_weights[i]
 
-    return cc 
-    
+    return cc
+
 
 def classify_cusps(cc, b=1, geval=False):
     """
@@ -249,7 +281,7 @@ def classify_cusps(cc, b=1, geval=False):
     mu_cc = np.nanmean(sum_cc)
     std_cc = np.nanstd(sum_cc)
 
-    extrema = np.array( signal.argrelextrema(sum_cc, np.greater) )[0]
+    extrema = np.array(signal.argrelextrema(sum_cc, np.greater))[0]
     extrema = [x for x in extrema if sum_cc[x] > mu_cc + b * std_cc]
 
     if geval is False:
@@ -280,17 +312,17 @@ def _make_components(indicator, cusp_points=None):
     if len(indicator.shape) > 1:
         indicator = indicator[0]
     j = 0
-    
+
     for i, x in enumerate(indicator):
         if i == len(indicator) - 1:
-            window = indicator[j : i]
+            window = indicator[j: i]
             if len(window) >= 2:
                 windows.append(window)
             break
         elif indicator[i + 1] == x + 1:
             continue  # still part of the same block
         else:  # block has ended
-            window = indicator[j : i]
+            window = indicator[j: i]
             if len(window) >= 2:
                 windows.append(window)
             j = i + 1
@@ -311,7 +343,7 @@ def _make_components(indicator, cusp_points=None):
 
     for holder, window in zip(pt_holder, windows):
         if holder != []:
-            windows_.append (window )
+            windows_.append(window)
             estimated_cusp_points.append(int(np.median(holder)))
 
     estimated_cusp_points = np.array(estimated_cusp_points, dtype=int)
@@ -349,19 +381,19 @@ def make_components(indicator, cusp_points=None, scan_back=0):
         windows_ = []
         for i in range(len(windows)):
             if len(windows_) == 0:
-                windows_.append( list(windows[i]) )
+                windows_.append(list(windows[i]))
             else:
                 if windows[i][0] <= windows_[-1][-1] + scan_back:
-                    fill_between = list( range(windows_[-1][-1] + 1,
-                        windows[i][0]) )
-                    windows_[-1].extend( fill_between )
-                    windows_[-1].extend( list(windows[i]) )
+                    fill_between = list(range(windows_[-1][-1] + 1,
+                                              windows[i][0]))
+                    windows_[-1].extend(fill_between)
+                    windows_[-1].extend(list(windows[i]))
                 else:
-                    windows_.append( list(windows[i]) )
-    
+                    windows_.append(list(windows[i]))
+
     else:
         windows_ = windows
-    
+
     if cusp_points is None:
         return windows_
     return windows_, estimated_cusp_points
@@ -449,12 +481,14 @@ def _sliding_windows(a, N):
     Taken from https://stackoverflow.com/questions/52463972/generating-banded-matrices-using-numpy.
     """
     a = np.asarray(a)
-    p = np.zeros(N-1,dtype=a.dtype)
-    b = np.concatenate((p,a,p))
+    p = np.zeros(N - 1, dtype=a.dtype)
+    b = np.concatenate((p, a, p))
     s = b.strides[0]
-    return np.lib.stride_tricks.as_strided(b[N-1:], 
-                   shape=(N,len(a)+N-1),
-                   strides=(-s,s))
+    return np.lib.stride_tricks.as_strided(
+        b[N - 1:],
+        shape=(N, len(a) + N - 1),
+        strides=(-s, s),
+    )
 
 
 def setup_corr_mat(k, N):
@@ -473,7 +507,7 @@ def setup_corr_mat(k, N):
     """
     full_corr_mat = _sliding_windows(k, N)
     overhang = full_corr_mat.shape[-1] - N
-    if overhang %2 == 1:
+    if overhang % 2 == 1:
         front = int((overhang + 1) / 2) - 1
         back = front + 1
     else:
@@ -481,14 +515,16 @@ def setup_corr_mat(k, N):
     corr_mat = full_corr_mat[:, front:-back]
 
     return corr_mat
-    
 
-def matrix_cusplet(arr,
-    kernel,
-    widths,
-    k_args=[],
-    reflection=0,
-    width_weights=None):
+
+def matrix_cusplet(
+        arr,
+        kernel,
+        widths,
+        k_args=None,
+        reflection=0,
+        width_weights=None,
+):
     """Computes the cusplet transform using matrix multiplication.
 
     This method is provided for the sake only of completeness; it is orders of magnitude 
@@ -510,10 +546,16 @@ def matrix_cusplet(arr,
     :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
+    :param width_weights:
+    :type width_weights:
+
     :returns: tuple -- (numpy array of shape (L, n) -- the cusplet transform, None)
 
     """
-    arr = np.array( arr )
+    if k_args is None:
+        k_args = []
+
+    arr = np.array(arr)
     cc = np.zeros((len(widths), len(arr)))
 
     # we need to fill all nans
@@ -523,13 +565,13 @@ def matrix_cusplet(arr,
     nonzero_fn = lambda x: x.nonzero()[0]
 
     arr[nans] = np.interp(nonzero_fn(nans),
-            nonzero_fn(~nans),
-            arr[~nans])
+                          nonzero_fn(~nans),
+                          arr[~nans])
 
     # allow for weighting of width importance
     if width_weights is None:
         width_weights = np.ones_like(widths)
-   
+
     # now we will see what group action to operate with
     for i, w in enumerate(widths):
         k = kernel(w, *k_args)
@@ -541,21 +583,22 @@ def matrix_cusplet(arr,
             k = -k
         elif reflection == 3:
             k = -k[::-1]
-            
+
         # now set up the cross correlation
         corr_mat = setup_corr_mat(k, arr.shape[0])
         cc[i] = np.dot(corr_mat, arr)
-        
+
     return cc, None
 
 
-def inverse_cusplet(cc,
-                   kernel,
-                   widths,
-                   k_args=[],
-                   reflection=0,
-                   width_ind=0
-                   ):
+def inverse_cusplet(
+        cc,
+        kernel,
+        widths,
+        k_args=None,
+        reflection=0,
+        width_ind=0,
+):
     """Computes the inverse of the discrete cusplet / shocklet transform.
 
     The cusplet transform is overcomplete, at least in theory. Since each row of the cusplet transform is 
@@ -595,8 +638,14 @@ def inverse_cusplet(cc,
     :param reflection: integer n evaluates to n %4, element of the reflection group that left-multiplies the kernel function. Default is 0 (identity element).
     :type reflection: int
 
+    :param width_ind:
+    :type width_ind:
+
     :returns: numpy.ndarray -- the reconstructed original time series. This time series will have (roughly) the same functional form as the original, but it is not guaranteed that its location and scale will be the same.
     """
+    if k_args is None:
+        k_args = []
+
     # now we will see what group action to operate with
     # cusplet transform is overcomplete so we need only invert one row
     # by default choose the one with smallest kernel as will have 
@@ -616,8 +665,8 @@ def inverse_cusplet(cc,
     # so we need x = A^{-1}C
     # but this is gross and expensive so solve using lstsq
     invq = np.linalg.lstsq(
-                          corr_mat,
-                          cc[width_ind],
-                          rcond=-1
+        corr_mat,
+        cc[width_ind],
+        rcond=-1
     )
     return invq
