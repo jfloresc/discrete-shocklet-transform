@@ -14,9 +14,9 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src'))
-sys.setrecursionlimit( 1500 )
 
+sys.path.insert(0, os.path.abspath('../discrete_shocklets'))
+sys.setrecursionlimit(1500)
 
 # -- Project information -----------------------------------------------------
 
@@ -28,7 +28,6 @@ author = 'David Dewhurst, Thayer Alshaabi, Michael Arnold, Josh Minot'
 version = ''
 # The full version, including alpha/beta/rc tags
 release = '0.0.1'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -71,7 +70,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -106,7 +104,6 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'discrete-shocklet-transformdoc'
 
-
 # -- Options for LaTeX output ------------------------------------------------
 
 latex_elements = {
@@ -131,10 +128,14 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'discrete-shocklet-transform.tex', 'discrete-shocklet-transform Documentation',
-     'David Dewhurst, Thayer Alshaabi, Michael Arnold, Josh Minot', 'manual'),
+    (
+        master_doc,
+        'discrete-shocklet-transform.tex',
+        'discrete-shocklet-transform Documentation',
+        'David Dewhurst, Thayer Alshaabi, Michael Arnold, Josh Minot',
+        'manual'
+    ),
 ]
-
 
 # -- Options for manual page output ------------------------------------------
 
@@ -144,7 +145,6 @@ man_pages = [
     (master_doc, 'discrete-shocklet-transform', 'discrete-shocklet-transform Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -156,7 +156,6 @@ texinfo_documents = [
      author, 'discrete-shocklet-transform', 'One line description of project.',
      'Miscellaneous'),
 ]
-
 
 # -- Options for Epub output -------------------------------------------------
 
@@ -174,6 +173,5 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
-
 
 # -- Extension configuration -------------------------------------------------
