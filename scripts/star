@@ -320,8 +320,8 @@ def main():
             wmax = min(args.nw, int(0.5 * nt))
 
             # ensure we have a valid savespec
-            if args.savespec not in ['cc', 'indic', 'all']:
-                print(f'{args.savespec} not one of cc, indic, or all. Defaulting to all.')
+            if args.savespec not in ['cc', 'windows', 'indic', 'all']:
+                print(f'{args.savespec} not one of cc, windows, indic, or all. Defaulting to all.')
                 savespec = 'all'
             else:
                 savespec = args.savespec
